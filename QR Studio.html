@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>QR Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+:root{--bg:#eceff4;--panel:#fff;--ink:#14171f;--mute:#667085;--line:#d9dee7;--acc:#3a4bff;--accink:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1218;--panel:#181c25;--ink:#eef1f6;--mute:#98a2b3;--line:#2b3140;--acc:#7b88ff;--accink:#0f1218}}
+:root[data-theme="dark"]{--bg:#0f1218;--panel:#181c25;--ink:#eef1f6;--mute:#98a2b3;--line:#2b3140;--acc:#7b88ff;--accink:#0f1218}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Sora,system-ui,-apple-system,"Segoe UI",sans-serif}
+.app{max-width:1060px;margin:0 auto;padding:20px 16px 40px;display:grid;gap:18px;grid-template-columns:1fr}
+@media(min-width:860px){.app{grid-template-columns:minmax(0,1fr) 380px;align-items:start}.stage{position:sticky;top:16px}}
+h1{font-size:22px;margin:0 0 4px;letter-spacing:-.02em}
+.sub{color:var(--mute);margin:0 0 14px;font-size:13px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.sec{padding:14px 0;border-top:1px solid var(--line)}
+.sec:first-of-type{border-top:0;padding-top:0}
+.sec:last-child{padding-bottom:0}
+h2{font-size:14px;margin:0 0 10px;font-weight:600}
+label{display:block;font-size:13px;color:var(--mute);margin:8px 0 4px}
+input[type=text],select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font:inherit}
+input[type=range]{width:100%;accent-color:var(--acc)}
+input[type=color]{width:100%;height:36px;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:2px}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button,.btn{font:inherit;font-size:13px;padding:8px 11px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.btn.pri{background:var(--acc);color:var(--accink);border-color:var(--acc);font-weight:600;padding:12px 16px;width:100%;font-size:14px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.pal{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pal button{border:2px solid var(--line);border-radius:10px;padding:0;overflow:hidden;cursor:pointer;background:none;text-align:left}
+.pal button[aria-pressed=true]{border-color:var(--acc)}
+.pal i{display:block;height:34px}
+.pal span{display:block;font-size:11px;padding:4px 6px;color:var(--ink)}
+.stage .panel{display:grid;gap:12px;justify-items:center}
+.cv{width:100%;display:flex;justify-content:center;padding:14px;border-radius:10px;background:repeating-conic-gradient(var(--line) 0 25%,transparent 0 50%) 0 0/16px 16px}
+canvas{max-width:100%;height:auto;display:block}
+.hint{font-size:12px;color:var(--mute);margin:6px 0 0}
+.val{float:right;color:var(--ink)}
+.file{display:flex;gap:8px;align-items:center}
+.file input{flex:1;min-width:0;font-size:12px;color:var(--mute)}
+.tabs{display:flex;gap:6px;margin-bottom:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px}
+.tabs button{flex:1;font:inherit;font-weight:600;font-size:14px;padding:9px;border:0;border-radius:9px;background:none;color:var(--mute);cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--acc);color:var(--accink)}
+.ic{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px}
+.ic button{padding:0;border:2px solid var(--line);border-radius:10px;background:var(--bg);cursor:pointer;aspect-ratio:1;overflow:hidden;line-height:0}
+.ic button[aria-pressed=true]{border-color:var(--acc)}
+.ic img{width:100%;height:100%;display:block}
+.chk{display:flex;gap:8px;align-items:center;font-size:13px;margin-top:10px;color:var(--ink)}
+.chk input{width:auto;accent-color:var(--acc)}
+</style>
+</head>
+<body>
+<div class="app">
+<div>
+<h1>QR Studio</h1>
+<p class="sub">Make a QR code for a link or a Wi-Fi network, style it, then download.</p>
+<div class="tabs" role="tablist"><button data-t="link" role="tab" aria-selected="true">Link</button><button data-t="wifi" role="tab" aria-selected="false">Wi-Fi</button></div>
+<div class="panel">
+<div class="sec" id="tabLink"><h2>Link</h2>
+<input type="text" id="url" value="https://example.com" placeholder="https://your-link.com" aria-label="Link">
+</div>
+<div class="sec" id="tabWifi" hidden><h2>Wi-Fi network</h2>
+<label for="ssid">Network name (SSID)</label><input type="text" id="ssid" placeholder="MyHomeWiFi" autocomplete="off">
+<div id="pwWrap"><label for="pw">Password</label><input type="password" id="pw" autocomplete="off">
+<label class="chk"><input type="checkbox" id="showpw"> Show password</label></div>
+<label>Encryption</label><div class="seg" id="enc"></div>
+<p class="hint" id="encHint"></p>
+<label class="chk"><input type="checkbox" id="hid"> Hidden network</label></div>
+<div class="sec"><h2>Color palette</h2>
+<div class="pal" id="pals"></div>
+<div class="row" style="margin-top:8px">
+<div><label for="fg">Color 1</label><input type="color" id="fg" value="#111111"></div>
+<div><label for="fg2">Color 2</label><input type="color" id="fg2" value="#111111"></div>
+<div><label for="bg">Background</label><input type="color" id="bg" value="#ffffff"></div>
+</div>
+<p class="hint">Set Color 1 and Color 2 apart for a gradient. Keep the background lighter than the dots so phones can scan it.</p>
+</div>
+<div class="sec"><h2>Dot pattern</h2><div class="seg" id="pattern"></div>
+<label>Corner eyes</label><div class="seg" id="eye"></div></div>
+<div class="sec"><h2>Logo</h2>
+<label style="margin-top:0">Social icons</label><div class="ic" id="icons"></div>
+<label>Or upload your own</label>
+<div class="file"><input type="file" id="logo" accept="image/*" aria-label="Upload logo"><button class="btn" id="rm">Remove</button></div>
+<label for="lsize">Logo size <span class="val" id="lsv">22%</span></label>
+<input type="range" id="lsize" min="10" max="28" value="22">
+<label>Logo shape</label><div class="seg" id="lshape"></div></div>
+<div class="sec"><h2>Size and spacing</h2>
+<label for="size">Image size <span class="val" id="szv">640 px</span></label>
+<input type="range" id="size" min="256" max="1200" step="16" value="640">
+<label for="quiet">Quiet border <span class="val" id="qv">2</span></label>
+<input type="range" id="quiet" min="0" max="6" value="2"></div>
+<div class="sec"><h2>Frame and caption</h2>
+<div class="seg" id="frame"></div>
+<label for="cap">Caption</label>
+<input type="text" id="cap" value="Scan me" maxlength="32">
+<label for="rad">Corner roundness <span class="val" id="rv">24</span></label>
+<input type="range" id="rad" min="0" max="60" value="24"></div>
+</div>
+</div>
+<div class="stage"><div class="panel">
+<div class="cv"><canvas id="c" aria-label="QR code preview"></canvas></div>
+<button class="btn pri" id="dl">Download PNG</button>
+</div></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const PALS=[["Classic","#111111","#111111","#ffffff"],["Ocean","#0b5fff","#00b8d9","#f4fbff"],["Sunset","#e8366d","#ff9a3c","#fff8f1"],["Forest","#14532d","#65a30d","#f7fbef"],["Grape","#5b21b6","#c026d3","#faf5ff"],["Night","#e8edff","#7dd3fc","#0f172a"]];
+const S={tab:"link",enc:"WPA",icon:null,pattern:"square",eye:"rounded",lshape:"rounded",frame:"card",pal:0,logo:null};
+const OPTS={pattern:[["square","Square"],["dot","Dots"],["rounded","Rounded"],["diamond","Diamond"],["classy","Classy"],["bars","Bars"]],
+eye:[["square","Square"],["rounded","Rounded"],["circle","Circle"]],
+lshape:[["square","Square"],["rounded","Rounded"],["circle","Circle"]],
+enc:[["WPA","WPA/WPA2/WPA3"],["SAE","WPA3 only"],["WEP","WEP"],["nopass","None"]],
+frame:[["none","None"],["line","Line"],["card","Card"]]};
+for(const k in OPTS){const el=$(k);OPTS[k].forEach(([v,t])=>{const b=document.createElement("button");b.textContent=t;b.dataset.v=v;b.onclick=()=>{S[k]=v;mark(k);draw()};el.appendChild(b)});mark(k)}
+function mark(k){[...$(k).children].forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===S[k]))}
+PALS.forEach((p,i)=>{const b=document.createElement("button");b.innerHTML=`<i style="background:linear-gradient(90deg,${p[1]},${p[2]});outline:0"></i><span>${p[0]}</span>`;b.style.background=p[3];b.onclick=()=>{S.pal=i;$("fg").value=p[1];$("fg2").value=p[2];$("bg").value=p[3];palMark();draw()};$("pals").appendChild(b)});
+function palMark(){[...$("pals").children].forEach((b,i)=>b.setAttribute("aria-pressed",i===S.pal))}
+palMark();
+["url","ssid","pw","hid","fg","fg2","bg","size","quiet","cap","rad","lsize"].forEach(id=>$(id).addEventListener("input",()=>{if(["fg","fg2","bg"].includes(id)){S.pal=-1;palMark()}draw()}));
+$("logo").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{S.logo=im;S.icon=null;iconMark();draw()};im.src=r.result};r.readAsDataURL(f)};
+$("rm").onclick=()=>{S.logo=null;S.icon=null;iconMark();$("logo").value="";draw()};
+function rr(c,x,y,w,h,r){const [a,b,d,e]=Array.isArray(r)?r:[r,r,r,r];c.moveTo(x+a,y);c.lineTo(x+w-b,y);c.arcTo(x+w,y,x+w,y+b,b);c.lineTo(x+w,y+h-d);c.arcTo(x+w,y+h,x+w-d,y+h,d);c.lineTo(x+e,y+h);c.arcTo(x,y+h,x,y+h-e,e);c.lineTo(x,y+a);c.arcTo(x,y,x+a,y,a);c.closePath()}
+function draw(){
+const cv=$("c"),c=cv.getContext("2d");
+const Z=+$("size").value,m=+$("quiet").value,rad=+$("rad").value,url=payload();wifiUI();
+$("szv").textContent=Z+" px";$("qv").textContent=m;$("rv").textContent=rad;$("lsv").textContent=$("lsize").value+"%";
+const fg=$("fg").value,fg2=$("fg2").value,bg=$("bg").value,cap=S.frame==="card"?$("cap").value.trim():"";
+const pad=S.frame==="none"?0:Math.round(Z*.06),capH=cap?Math.round(Z*.15):0;
+const W=Z+pad*2,H=Z+pad*2+capH;cv.width=W;cv.height=H;
+const R=S.frame==="none"?0:rad*Z/640;
+c.clearRect(0,0,W,H);
+const frameCol=fg;
+c.beginPath();rr(c,0,0,W,H,R);c.fillStyle=bg;c.fill();
+if(S.frame!=="none"){c.save();c.beginPath();rr(c,Z*.006,Z*.006,W-Z*.012,H-Z*.012,R);c.lineWidth=Z*.012;c.strokeStyle=frameCol;c.stroke();c.restore()}
+if(!url){c.fillStyle=fg;c.font=`600 ${Z*.04}px Sora,sans-serif`;c.textAlign="center";c.fillText(S.tab==="wifi"?"Enter the network name":"Enter a link to begin",W/2,H/2);return}
+let q;try{q=qrcode(0,"H");q.addData(url);q.make()}catch(e){c.fillStyle=fg;c.font=`600 ${Z*.035}px Sora,sans-serif`;c.textAlign="center";c.fillText("Link is too long for a QR code",W/2,H/2);return}
+const n=q.getModuleCount(),cell=Z/(n+2*m),ox=pad+m*cell,oy=pad+m*cell;
+const g=c.createLinearGradient(pad,pad,pad+Z,pad+Z);g.addColorStop(0,fg);g.addColorStop(1,fg2);
+const lr=S.logo?+$("lsize").value/100:0,lw=lr*n*cell,lc=pad+Z/2;
+const inLogo=(r,k)=>{if(!S.logo)return false;const cx=ox+(k+.5)*cell,cy=oy+(r+.5)*cell,h=lw/2+cell*.9;return Math.abs(cx-lc)<h&&Math.abs(cy-lc)<h};
+const eyes=(r,k)=>(r<7&&k<7)||(r<7&&k>=n-7)||(r>=n-7&&k<7);
+c.fillStyle=g;
+for(let r=0;r<n;r++)for(let k=0;k<n;k++){
+if(!q.isDark(r,k)||eyes(r,k)||inLogo(r,k))continue;
+const x=ox+k*cell,y=oy+r*cell,d=(a,b)=>a>=0&&b>=0&&a<n&&b<n&&q.isDark(a,b)&&!eyes(a,b);
+c.beginPath();
+switch(S.pattern){
+case"dot":c.arc(x+cell/2,y+cell/2,cell*.45,0,7);break;
+case"rounded":rr(c,x+cell*.04,y+cell*.04,cell*.92,cell*.92,cell*.32);break;
+case"diamond":c.moveTo(x+cell/2,y-cell*.04);c.lineTo(x+cell*1.04,y+cell/2);c.lineTo(x+cell/2,y+cell*1.04);c.lineTo(x-cell*.04,y+cell/2);c.closePath();break;
+case"classy":rr(c,x,y,cell+.5,cell+.5,[cell*.5,0,cell*.5,0]);break;
+case"bars":rr(c,x+cell*.15,y,cell*.7,cell+.5,cell*.35);break;
+default:c.rect(x-.25,y-.25,cell+.5,cell+.5)}
+c.fill()}
+[[0,0],[0,n-7],[n-7,0]].forEach(([r,k])=>{
+const x=ox+k*cell,y=oy+r*cell,s=7*cell,ro=S.eye==="circle"?s/2:S.eye==="rounded"?cell*1.9:0;
+const ri=S.eye==="circle"?(s-2*cell)/2:S.eye==="rounded"?cell*1.1:0;
+const rc=S.eye==="circle"?1.5*cell:S.eye==="rounded"?cell*.9:0;
+c.fillStyle=g;c.beginPath();rr(c,x,y,s,s,ro);c.fill();
+c.fillStyle=bg;c.beginPath();rr(c,x+cell,y+cell,s-2*cell,s-2*cell,ri);c.fill();
+c.fillStyle=g;c.beginPath();rr(c,x+2*cell,y+2*cell,3*cell,3*cell,rc);c.fill()});
+if(S.logo){const p=lw+cell*.8,x=lc-p/2,sh=S.lshape,rp=sh==="circle"?p/2:sh==="rounded"?p*.22:0;
+c.fillStyle=bg;c.beginPath();rr(c,x,x,p,p,rp);c.fill();
+const iw=lw,ix=lc-iw/2,ri=sh==="circle"?iw/2:sh==="rounded"?iw*.2:0;
+c.save();c.beginPath();rr(c,ix,ix,iw,iw,ri);c.clip();
+const im=S.logo,sc=Math.max(iw/im.width,iw/im.height),dw=im.width*sc,dh=im.height*sc;
+c.drawImage(im,lc-dw/2,lc-dh/2,dw,dh);c.restore()}
+if(cap){c.fillStyle=fg;c.font=`700 ${capH*.46}px Sora,system-ui,sans-serif`;c.textAlign="center";c.textBaseline="middle";c.fillText(cap,W/2,pad+Z+capH*.5+pad*.2)}
+}
+const HINTS={WPA:"Works for WPA, WPA2 and WPA3 (transitional) networks. Pick this if your router says WPA2 or WPA2/WPA3.",SAE:"Only for routers set to WPA3-Personal (SAE) only. Older phones may not join.",WEP:"Old and weak. Only use it if your router is set to WEP.",nopass:"Open network with no password."};
+function wifiUI(){$("pwWrap").hidden=S.enc==="nopass";$("encHint").textContent=HINTS[S.enc]}
+function payload(){if(S.tab==="link")return $("url").value.trim();const s=$("ssid").value;if(!s)return"";const e=v=>v.replace(/([\\;,:"])/g,"\\$1");return"WIFI:T:"+S.enc+";S:"+e(s)+";"+(S.enc==="nopass"?"":"P:"+e($("pw").value)+";")+($("hid").checked?"H:true;":"")+";"}
+$("showpw").onchange=e=>{$("pw").type=e.target.checked?"text":"password"};
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{S.tab=b.dataset.t;document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));$("tabLink").hidden=S.tab!=="link";$("tabWifi").hidden=S.tab!=="wifi";const cp=$("cap");if(cp.value==="Scan me"||cp.value==="Scan to join Wi-Fi")cp.value=S.tab==="wifi"?"Scan to join Wi-Fi":"Scan me";draw()});
+const T='<rect width="24" height="24" fill="';
+const TT='M13 5v9.500a2.500 2.500 0 11-2.500-2.500M13 5c.3 2 1.700 3.300 4 3.500';
+const ICONS=[
+["facebook","Facebook",T+'#1877f2"/><path d="M13.500 21v-7.500h2.600l.4-3h-3V8.600c0-.9.3-1.500 1.600-1.500h1.500V4.400c-.3 0-1.200-.1-2.300-.1-2.300 0-3.800 1.400-3.800 3.900v2.300H8v3h2.500V21z" fill="#fff"/>'],
+["instagram","Instagram",'<defs><linearGradient id="g" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#feda75"/><stop offset=".35" stop-color="#fa7e1e"/><stop offset=".6" stop-color="#d62976"/><stop offset="1" stop-color="#4f5bd5"/></linearGradient></defs><rect width="24" height="24" fill="url(#g)"/><rect x="5.500" y="5.500" width="13" height="13" rx="4" fill="none" stroke="#fff" stroke-width="1.600"/><circle cx="12" cy="12" r="3.100" fill="none" stroke="#fff" stroke-width="1.600"/><circle cx="16" cy="8" r="1" fill="#fff"/>'],
+["x","X",T+'#000"/><path d="M6 5.500l12 13M18 5.500L6 18.500" stroke="#fff" stroke-width="2" stroke-linecap="round"/>'],
+["youtube","YouTube",T+'#fff"/><rect x="2" y="5.500" width="20" height="13" rx="4" fill="#f00"/><path d="M10 9l5 3-5 3z" fill="#fff"/>'],
+["tiktok","TikTok",T+'#000"/><g fill="none" stroke-width="2" stroke-linecap="round"><path d="'+TT+'" stroke="#25f4ee" transform="translate(-.7 .5)"/><path d="'+TT+'" stroke="#fe2c55" transform="translate(.7 -.3)"/><path d="'+TT+'" stroke="#fff"/></g>'],
+["linkedin","LinkedIn",T+'#0a66c2"/><rect x="5" y="9.500" width="2.600" height="9" fill="#fff"/><circle cx="6.300" cy="6.600" r="1.500" fill="#fff"/><path d="M10.300 9.500h2.500v1.300c.5-.9 1.500-1.500 2.900-1.500 2.500 0 3.300 1.600 3.300 3.800v5.400h-2.600v-4.800c0-1.100-.3-1.900-1.400-1.900s-1.600.8-1.600 2v4.700h-2.600z" fill="#fff"/>'],
+["whatsapp","WhatsApp",T+'#25d366"/><path d="M12 4.800a7.200 7.200 0 00-6.200 10.900L4.800 19.200l3.600-.9A7.200 7.200 0 1012 4.800z" fill="none" stroke="#fff" stroke-width="1.700" stroke-linejoin="round"/><path d="M9.300 9c.2 2.700 2.600 5.200 5.400 5.500l.8-1.200-1.600-.9-.7.6c-.9-.4-1.800-1.300-2.200-2.200l.6-.7-.9-1.600z" fill="#fff"/>'],
+["telegram","Telegram",T+'#27a7e7"/><path d="M5 11.600l13-5.100-2.200 11.500-4-3-2 2-.4-3.800 6-5.400-7.500 4.700z" fill="#fff"/>'],
+["snapchat","Snapchat",T+'#fffc00"/><path d="M12 5c-2.500 0-3.600 1.900-3.600 3.900v1.600l-1.400.8 1.400.9c-.3 1-1 1.700-2 2 1.300.7 2.300.5 3 1 .5.4 1 .9 2.600.9s2.100-.5 2.600-.9c.7-.5 1.700-.3 3-1-1-.3-1.700-1-2-2l1.400-.9-1.400-.8V8.900C15.600 6.900 14.500 5 12 5z" fill="#fff" stroke="#000" stroke-width="1.100" stroke-linejoin="round"/>'],
+["spotify","Spotify",T+'#1db954"/><g fill="none" stroke="#000" stroke-width="1.600" stroke-linecap="round"><path d="M6.200 9.200c4-1.200 8.300-.8 11.800 1.200"/><path d="M7 12.300c3.300-.9 6.300-.6 9.200 1"/><path d="M7.800 15.200c2.500-.6 4.800-.4 7 .8"/></g>']];
+ICONS.forEach(([id,name,inner])=>{const im=new Image();im.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 24 24">'+inner+'</svg>');
+const b=document.createElement("button");b.dataset.id=id;b.title=name;b.setAttribute("aria-label",name);b.setAttribute("aria-pressed","false");b.appendChild(im.cloneNode());
+b.onclick=()=>{const go=()=>{S.logo=im;S.icon=id;$("logo").value="";iconMark();draw()};im.complete?go():(im.onload=go)};$("icons").appendChild(b)});
+function iconMark(){[...$("icons").children].forEach(b=>b.setAttribute("aria-pressed",b.dataset.id===S.icon))}
+$("dl").onclick=()=>{const a=document.createElement("a");a.download="qr-code.png";a.href=$("c").toDataURL("image/png");a.click()};
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(draw);draw();
+</script>
+</body>
+</html>
